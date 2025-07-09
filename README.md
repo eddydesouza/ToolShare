@@ -2,13 +2,13 @@
 
 **Empowering Local Communities Through Tool Sharing**
 
-ToolShare is a peer-to-peer web application that connects individuals within local neighborhoods who want to **rent out or borrow tools**—from drills and saws to lawnmowers and ladders. This platform fosters a **sustainable sharing economy** by giving users the ability to **list, search, rent, and subscribe to tools** based on proximity using ZIP code-based filters. It’s designed to be simple, intuitive, and hyper-local—perfect for users with limited technical skills but a need for occasional tool access.
+ToolShare is a peer-to-peer web application that connects individuals within local neighborhoods who want to **rent out or borrow tools**, from drills and saws to lawnmowers and ladders. This platform fosters a **sustainable sharing economy** by giving users the ability to **list, search, rent, and subscribe to tools** based on proximity using ZIP code-based filters. It’s designed to be simple, intuitive, and hyper-local—perfect for users with limited technical skills but a need for occasional tool access.
 
 ---
 ## 👥 Contributors
 
-| Name            | Role           | Hours/Week | Responsibility            | Skillsets         |
-|-----------------|----------------|------------|----------------------------|-------------------|
+| Name            | Role           | Hours/Week | Responsibility             | Skillsets          |
+|-----------------|----------------|------------|----------------------------|--------------------|
 | Dustin Kelly    | Product Owner  | 25         | Prioritize Product Backlog | Project Management |
 | Eddy De Souza   | Developer      | 40         | Backend                    | Python/Flask       |
 | Kristen Hafford | Scrum Master   | 25         | Manage Backlog / Team      | Project Management |

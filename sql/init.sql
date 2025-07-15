@@ -14,6 +14,14 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Insert sample artisans
+INSERT IGNORE INTO artisans (name, zip_code, product_name, subscription_price)
+VALUES
+  ('John Doe', '12345', 'Cordless Drill', 5.00),
+  ('Jane Smith', '23456', 'Circular Saw', 8.50),
+  ('Mike Johnson', '34567', 'Pressure Washer', 12.00);
+
+
 -- TOOLS TABLE
 CREATE TABLE tools (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -97,3 +105,15 @@ CREATE TABLE notifications (
     created_at DATETIME,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- Artisans table required by Flask app
+CREATE TABLE IF NOT EXISTS artisans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    zip_code VARCHAR(20),
+    product_name VARCHAR(100),
+    subscription_price DECIMAL(10, 2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ToolShare - Home</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+
+  <h1 class="mb-4">Welcome to ToolShare</h1>
+
+  {% if tools %}
+    <div class="row">
+      {% for tool in tools %}
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="card h-100">
+            {% if tool.image_url %}
+              <img src="{{ tool.image_url }}" class="card-img-top" alt="{{ tool.name }}">
+            {% endif %}
+            <div class="card-body">
+              <h5 class="card-title">{{ tool.name }}</h5>
+              <p class="card-text">{{ tool.description }}</p>
+              <p><strong>${{ tool.daily_price }}</strong> per day</p>
+              <a href="{{ url_for('subscribe', artisan_id=tool.id) }}" class="btn btn-primary">Rent this Tool</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No tools available right now.</p>
+  {% endif %}
+
+  <a href="{{ url_for('register_artisan') }}" class="btn btn-success mt-4">Register a Tool</a>
+</body>
+</html>
+

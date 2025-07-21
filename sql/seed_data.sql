@@ -1,5 +1,5 @@
 -- Insert sample users
-INSERT INTO users (email, password_hash, first_name, last_name, phone, address_line1, city, state, zip_code, profile_picture_url)
+INSERT IGNORE INTO users (email, password_hash, first_name, last_name, phone, address_line1, city, state, zip_code, profile_picture_url)
 VALUES
   ('john.doe@example.com', '$2a$10$xJwL5v5Jz7t6VhAe1tQZ3.QS4VU5wYb9XjJZ8K1fLmN3vW6pY7zG', 'John', 'Doe', '555-123-4567', '123 Main St', 'Springfield', 'IL', '62704', 'https://randomuser.me/api/portraits/men/1.jpg'),
   ('jane.smith@example.com', '$2a$10$xJwL5v5Jz7t6VhAe1tQZ3.QS4VU5wYb9XjJZ8K1fLmN3vW6pY7zG', 'Jane', 'Smith', '555-234-5678', '456 Oak Ave', 'Springfield', 'IL', '62704', 'https://randomuser.me/api/portraits/women/1.jpg'),
@@ -8,7 +8,7 @@ VALUES
   ('david.brown@example.com', '$2a$10$xJwL5v5Jz7t6VhAe1tQZ3.QS4VU5wYb9XjJZ8K1fLmN3vW6pY7zG', 'David', 'Brown', '555-567-8901', '654 Maple Dr', 'Springfield', 'IL', '62704', 'https://randomuser.me/api/portraits/men/3.jpg');
  
 -- Insert sample tools
-INSERT INTO tools (owner_id, name, description, category, daily_price, deposit_amount, is_available)
+INSERT IGNORE INTO tools (owner_id, name, description, category, daily_price, deposit_amount, is_available)
 VALUES
   (1, 'Power Drill', 'Cordless 20V MAX lithium-ion drill with 2 batteries', 'Power Tools', 15.00, 50.00, TRUE),
   (1, 'Circular Saw', '7-1/4 inch circular saw with laser guide', 'Power Tools', 20.00, 75.00, TRUE),
@@ -22,7 +22,7 @@ VALUES
   (5, 'Generator', '3500W portable generator with electric start', 'Outdoor Equipment', 50.00, 250.00, TRUE);
  
 -- Insert tool images
-INSERT INTO tool_images (tool_id, image_url, is_primary)
+INSERT IGNORE INTO tool_images (tool_id, image_url, is_primary)
 VALUES
   (1, 'https://example.com/images/drill1.jpg', TRUE),
   (1, 'https://example.com/images/drill2.jpg', FALSE),
@@ -38,7 +38,7 @@ VALUES
   (10, 'https://example.com/images/generator1.jpg', TRUE);
  
 -- Set up tool availability for the next 30 days
-INSERT INTO tool_availability (tool_id, date, is_available)
+INSERT IGNORE INTO tool_availability (tool_id, date, is_available)
 SELECT 
   id, 
   DATE_ADD(CURRENT_DATE, INTERVAL n DAY) AS date,
@@ -62,7 +62,7 @@ WHERE (tool_id = 1 AND date IN (DATE_ADD(CURRENT_DATE, INTERVAL 3 DAY), DATE_ADD
    OR (tool_id = 5 AND date > DATE_ADD(CURRENT_DATE, INTERVAL 20 DAY));
  
 -- Create some rental requests
-INSERT INTO rental_requests (tool_id, renter_id, start_date, end_date, status, requested_at, responded_at)
+INSERT IGNORE INTO rental_requests (tool_id, renter_id, start_date, end_date, status, requested_at, responded_at)
 VALUES
   (1, 2, DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY), DATE_ADD(CURRENT_DATE, INTERVAL 2 DAY), 'completed', DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
   (3, 1, DATE_ADD(CURRENT_DATE, INTERVAL 5 DAY), DATE_ADD(CURRENT_DATE, INTERVAL 6 DAY), 'approved', DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY)),
@@ -71,24 +71,24 @@ VALUES
   (4, 5, DATE_ADD(CURRENT_DATE, INTERVAL 7 DAY), DATE_ADD(CURRENT_DATE, INTERVAL 9 DAY), 'approved', DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_SUB(NOW(), INTERVAL 3 DAY));
  
 -- Create payments for completed rentals
-INSERT INTO payments (rental_id, stripe_payment_id, amount, payment_method, status, created_at, processed_at)
+INSERT IGNORE INTO payments (rental_id, stripe_payment_id, amount, payment_method, status, created_at, processed_at)
 VALUES
   (1, 'pi_1JX9Zt2eZvKYlo2C0XJX9Zt2', 30.00, 'card_1JX9Zt2eZvKYlo2C0XJX9Zt2', 'succeeded', DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
   (2, 'pi_2JX9Zt2eZvKYlo2C0XJX9Zt2', 50.00, 'card_2JX9Zt2eZvKYlo2C0XJX9Zt2', 'succeeded', DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY)),
   (5, 'pi_3JX9Zt2eZvKYlo2C0XJX9Zt2', 36.00, 'card_3JX9Zt2eZvKYlo2C0XJX9Zt2', 'succeeded', DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_SUB(NOW(), INTERVAL 3 DAY));
  
 -- Create some reviews
-INSERT INTO reviews (rental_id, reviewer_id, reviewee_id, rating, comment, created_at)
+INSERT IGNORE INTO reviews (rental_id, reviewer_id, reviewee_id, rating, comment, created_at)
 VALUES
   (1, 2, 1, 5, 'Great drill, worked perfectly! John was very helpful showing me how to use it.', DATE_SUB(NOW(), INTERVAL 3 DAY)),
   (1, 1, 2, 4, 'Jane returned the drill on time and in good condition.', DATE_SUB(NOW(), INTERVAL 3 DAY)),
   (5, 5, 4, 3, 'Hedge trimmer worked well but was a bit dull.', DATE_SUB(NOW(), INTERVAL 1 DAY));
  
 -- Create some notifications
-INSERT INTO notifications (user_id, message, is_read, related_entity_type, related_entity_id, created_at)
+INSERT IGNORE INTO notifications (user_id, message, is_read, related_entity_type, related_entity_id, created_at)
 VALUES
   (1, 'Your Power Drill has been rented by Jane Smith for 2 days', TRUE, 'rental', 1, DATE_SUB(NOW(), INTERVAL 5 DAY)),
   (2, 'Your rental request for Power Drill has been approved', TRUE, 'rental', 1, DATE_SUB(NOW(), INTERVAL 4 DAY)),
   (3, 'Your rental request for Circular Saw has been declined', TRUE, 'rental', 4, DATE_SUB(NOW(), INTERVAL 1 DAY)),
   (4, 'You have a new rental request for Pressure Washer', FALSE, 'rental', 3, DATE_SUB(NOW(), INTERVAL 1 DAY)),
-  (5, 'Payment received for Hedge Trimmer rental', TRUE, 'payment', 3, DATE_SUB(NOW(), INTERVAL 3 DAY));
+  (5, 'Payment received for Hedge Trimmer rental', TRUE, 'payment', 3, DATE_SUB(NOW(), INTERVAL 3 DAY)); 

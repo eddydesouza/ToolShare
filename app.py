@@ -1,8 +1,9 @@
 from flask import Flask, request, render_template, redirect, url_for, flash
-import mysql.connector
 import stripe
 import os
 from dotenv import load_dotenv
+from user_routes import user_bp
+from db import get_db_connection
 
 # Load environment variables from .env file (optional but helpful for dev)
 load_dotenv()
@@ -10,21 +11,10 @@ load_dotenv()
 # Flask app setup
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'supersecret')  # Needed for flash messages
-
-# MySQL configuration from environment
-db_config = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'user': os.getenv('DB_USER', 'your_username'),
-    'password': os.getenv('DB_PASS', 'your_password'),
-    'database': os.getenv('DB_NAME', 'artisan_platform')
-}
+app.register_blueprint(user_bp)
 
 # Stripe Test Mode key
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY', 'sk_test_your_test_key')
-
-# Helper function to connect to MySQL
-def get_db_connection():
-    return mysql.connector.connect(**db_config)
 
 # Routes
 

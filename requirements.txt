@@ -1,4 +1,6 @@
-flask==2.0.1
-mysql-connector-python==8.0.33
-selenium==4.10.0
-webdriver-manager==4.0.0
+flask
+mysql-connector-python
+selenium
+webdriver-manager
+stripe
+dotenv

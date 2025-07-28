@@ -150,3 +150,41 @@ def subscribe(artisan_id):
 # Run the app
 if __name__ == '__main__':
     app.run(debug=True)
+from flask import Flask, render_template, request, redirect, url_for, session
+
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'
+
+VALID_USERNAME = 'user'
+VALID_PASSWORD = 'password'
+
+@app.route('/')
+def home():
+    return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username == VALID_USERNAME and password == VALID_PASSWORD:
+            session['username'] = username
+            return redirect(url_for('success'))
+        else:
+            error = 'Invalid username or password'
+    return render_template('login.html', error=error)
+
+@app.route('/success')
+def success():
+    if 'username' in session:
+        return render_template('success.html', username=session['username'])
+    return redirect(url_for('login'))
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('login'))
+
+if __name__ == '__main__':
+    app.run(debug=True)

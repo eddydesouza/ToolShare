@@ -1,0 +1,15 @@
+body {
+  color: #22223B;
+}
+.wrapper {
+  background: #F2E9E4;
+}
+
+.btn-primary {
+  background-color: #4A4E69;
+}
+
+.logo img {
+  width: 220px;
+  margin-right: 35px;
+}

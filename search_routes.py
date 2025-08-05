@@ -25,7 +25,6 @@ def search_tools():
     """)
     categories = [row['category'] for row in cursor.fetchall()]
 
-    # Handle search/filter
     if request.method == 'POST':
         search_term = (request.form.get('search_term') or '').strip()
         selected_category = (request.form.get('category') or '').strip()
@@ -34,7 +33,6 @@ def search_tools():
         params = []
 
         if search_term:
-            # Case-insensitive search across name, description, and category
             where_clauses.append("""(
                 LOWER(name) LIKE %s OR
                 LOWER(description) LIKE %s OR

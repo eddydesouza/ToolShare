@@ -8,7 +8,6 @@ def tool_detail(tool_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Fetch tool info
     cursor.execute("SELECT * FROM tools WHERE id = %s", (tool_id,))
     tool = cursor.fetchone()
 
@@ -17,7 +16,6 @@ def tool_detail(tool_id):
         conn.close()
         abort(404)
 
-    # Fetch unavailable dates
     cursor.execute("""
         SELECT date, is_available
         FROM tool_availability 

@@ -51,7 +51,6 @@
             <span class="badge bg-secondary">Unavailable</span>
           {% endif %}
         <div class="mt-2">
-            <!--<a href="{{ url_for('tool.tool_detail', tool_id=t.id) }}" class="btn btn-outline-info btn-sm">View Availability</a>-->
             <button class="btn btn-outline-info btn-sm" onclick="loadAvailability({{ t.id }}, '{{ t.name }}')">View Availability</button>
         </div>
         </div>

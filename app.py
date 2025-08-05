@@ -3,7 +3,10 @@ import stripe
 import os
 from dotenv import load_dotenv
 from user_routes import user_bp
+from search_routes import search_bp
+from tool_routes import tool_bp
 from db import get_db_connection
+from tool_api import tool_api
 
 # Load environment variables from .env file (optional but helpful for dev)
 load_dotenv()
@@ -12,6 +15,9 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'supersecret')  # Needed for flash messages
 app.register_blueprint(user_bp)
+app.register_blueprint(search_bp)
+app.register_blueprint(tool_bp)
+app.register_blueprint(tool_api)
 
 # Stripe Test Mode key
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY', 'sk_test_your_test_key')

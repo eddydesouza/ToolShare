@@ -39,8 +39,8 @@
           <div class="d-flex justify-content-between">
             <strong>{{ t.name }}</strong>
             <span>
-              ${{ "%.2f"|format(t.daily_price) }} / day
-              {% if t.deposit_amount %} &middot; Deposit: ${{ "%.2f"|format(t.deposit_amount) }}{% endif %}
+                ${{ "%.2f"|format(t.daily_price or 0.00) }} / day
+                {% if t.deposit_amount is not none %} &middot; Deposit: ${{ "%.2f"|format(t.deposit_amount) }}{% endif %}
             </span>
           </div>
           <div class="text-muted small">{{ t.category }}</div>

@@ -20,7 +20,9 @@ def search_tools():
     cursor.execute("""
         SELECT DISTINCT category 
         FROM tools 
-        WHERE category IS NOT NULL AND category <> ''
+        WHERE category IS NOT NULL 
+          AND daily_price IS NOT NULL 
+          AND category <> ''
         ORDER BY category
     """)
     categories = [row['category'] for row in cursor.fetchall()]

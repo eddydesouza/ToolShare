@@ -35,10 +35,40 @@
                     placeholder="Short description, condition, notes…" required></textarea>
         </div>
 
+        <div class="col-md-6">
+          <label for="category" class="form-label">Category</label>
+          <select id="category" name="category" class="form-select" required>
+            <option value="" selected disabled>Choose…</option>
+            <option>Power Tools</option>
+            <option>Hand Tools</option>
+            <option>Garden & Outdoors</option>
+            <option>Automotive</option>
+            <option>Measuring & Layout</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="daily_price" class="form-label">Daily Price (USD)</label>
+          <input id="daily_price" name="daily_price" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" required>
+        </div>
+
+        <div class="col-md-3">
+          <label for="deposit_amount" class="form-label">Deposit (USD)</label>
+          <input id="deposit_amount" name="deposit_amount" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" required>
+        </div>
+
         <div class="col-12">
           <label for="photo" class="form-label">Photo (png, jpg, jpeg, gif)</label>
           <input id="photo" name="photo" class="form-control" type="file" accept=".png,.jpg,.jpeg,.gif">
           <div class="form-text">Max 5MB</div>
+        </div>
+
+        <!-- TEMP: keep until auth is wired -->
+        <div class="col-12">
+          <label for="owner_id" class="form-label">Owner ID</label>
+          <input id="owner_id" name="owner_id" class="form-control" type="number" min="1" value="1" required>
+          <div class="form-text">Temporary—defaults to user #1.</div>
         </div>
 
         <div class="col-12 d-flex gap-2">

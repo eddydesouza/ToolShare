@@ -155,7 +155,7 @@ def list_tools():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT id, name, description, photo_path, created_at
+        SELECT id, name, description, photo_path, category, daily_price, deposit_amount, created_at
         FROM tools
         ORDER BY created_at DESC
     """)
@@ -163,25 +163,39 @@ def list_tools():
     cursor.close()
     conn.close()
     return render_template('tools.html', tools=tools)
-
+# ...
 @app.route('/tools/new', methods=['GET', 'POST'])
 def create_tool():
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         description = request.form.get('description', '').strip()
-        owner_id = request.form.get('owner_id', '').strip() or '1'  # fallback to 1
+        owner_id = request.form.get('owner_id', '').strip() or '1'
+        category = request.form.get('category', '').strip()
+        daily_price = request.form.get('daily_price', '').strip()
+        deposit_amount = request.form.get('deposit_amount', '').strip()
 
-        if not name or not description:
-            flash("Please fill in the name and description.", "danger")
+        # Required fields
+        if not name or not description or not category or not daily_price or not deposit_amount:
+            flash("Please complete all required fields.", "danger")
             return redirect(url_for('create_tool'))
 
+        # Numeric validation
+        try:
+            daily_price_val = float(daily_price)
+            deposit_amount_val = float(deposit_amount)
+            if daily_price_val < 0 or deposit_amount_val < 0:
+                raise ValueError("Prices must be non-negative.")
+        except ValueError:
+            flash("Daily price and deposit must be valid non-negative numbers.", "danger")
+            return redirect(url_for('create_tool'))
+
+        # Optional photo
         photo = request.files.get('photo')
         photo_path = None
         if photo and photo.filename:
             if allowed_file(photo.filename):
                 filename = secure_filename(photo.filename)
                 base, ext = os.path.splitext(filename)
-                # fix deprecation warning (use timezone-aware now)
                 filename = f"{base}_{int(datetime.now(timezone.utc).timestamp())}{ext}"
                 save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 photo.save(save_path)
@@ -190,12 +204,15 @@ def create_tool():
                 flash("Please upload a valid image (png, jpg, jpeg, gif).", "danger")
                 return redirect(url_for('create_tool'))
 
+        # Insert
         conn = get_db_connection()
         cursor = conn.cursor()
-        # INSERT now includes owner_id
         cursor.execute(
-            "INSERT INTO tools (name, description, photo_path, owner_id, created_at) VALUES (%s, %s, %s, %s, NOW())",
-            (name, description, photo_path, owner_id)
+            """
+            INSERT INTO tools (name, description, photo_path, owner_id, category, daily_price, deposit_amount, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+            """,
+            (name, description, photo_path, owner_id, category, daily_price_val, deposit_amount_val)
         )
         conn.commit()
         cursor.close()
@@ -206,6 +223,7 @@ def create_tool():
 
     # GET
     return render_template('create_tool.html')
+
 
 
 # Run the app

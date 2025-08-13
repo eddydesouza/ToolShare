@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Create Tool Listing · ToolShare{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 m-0">Create Tool Listing</h1>
+    <div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('list_tools') }}">Back to Tools</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data" class="row g-3">
+        <div class="col-12">
+          <label for="name" class="form-label">Name</label>
+          <input id="name" name="name" class="form-control" type="text"
+                 placeholder="e.g., Compact Rotary Tool" required>
+        </div>
+
+        <div class="col-12">
+          <label for="description" class="form-label">Description</label>
+          <textarea id="description" name="description" class="form-control" rows="5"
+                    placeholder="Short description, condition, notes…" required></textarea>
+        </div>
+
+        <div class="col-12">
+          <label for="photo" class="form-label">Photo (png, jpg, jpeg, gif)</label>
+          <input id="photo" name="photo" class="form-control" type="file" accept=".png,.jpg,.jpeg,.gif">
+          <div class="form-text">Max 5MB</div>
+        </div>
+
+        <div class="col-12 d-flex gap-2">
+          <button class="btn btn-primary" type="submit">Create</button>
+          <a class="btn btn-outline-secondary" href="{{ url_for('list_tools') }}">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

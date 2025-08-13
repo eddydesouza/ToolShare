@@ -1,3 +1,5 @@
+werkzeug
+python-dotenv
 flask
 mysql-connector-python
 selenium

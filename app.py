@@ -7,6 +7,8 @@ from search_routes import search_bp
 from tool_routes import tool_bp
 from db import get_db_connection
 from tool_api import tool_api
+from werkzeug.utils import secure_filename
+from datetime import datetime, timezone
 
 # Load environment variables from .env file (optional but helpful for dev)
 load_dotenv()
@@ -22,8 +24,16 @@ app.register_blueprint(tool_api)
 # Stripe Test Mode key
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY', 'sk_test_your_test_key')
 
-# Routes
+# Upload configs for flask/Bootstrap to prevent malicious entries
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+def allowed_file(filename: str) -> bool:
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Routes
 @app.route('/')
 def index():
     conn = get_db_connection()
@@ -33,7 +43,6 @@ def index():
     cursor.close()
     conn.close()
     return render_template('index.html', artisans=artisans)
-
 
 @app.route('/register_artisan', methods=['GET', 'POST'])
 def register_artisan():
@@ -67,7 +76,6 @@ def register_artisan():
         return redirect(url_for('index'))
 
     return render_template('register_artisan.html')
-
 
 @app.route('/subscribe/<int:artisan_id>', methods=['GET', 'POST'])
 def subscribe(artisan_id):
@@ -142,6 +150,63 @@ def subscribe(artisan_id):
     conn.close()
 
     return render_template('subscribe.html', artisan=artisan)
+@app.route('/tools', methods=['GET'])
+def list_tools():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT id, name, description, photo_path, created_at
+        FROM tools
+        ORDER BY created_at DESC
+    """)
+    tools = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('tools.html', tools=tools)
+
+@app.route('/tools/new', methods=['GET', 'POST'])
+def create_tool():
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        description = request.form.get('description', '').strip()
+        owner_id = request.form.get('owner_id', '').strip() or '1'  # fallback to 1
+
+        if not name or not description:
+            flash("Please fill in the name and description.", "danger")
+            return redirect(url_for('create_tool'))
+
+        photo = request.files.get('photo')
+        photo_path = None
+        if photo and photo.filename:
+            if allowed_file(photo.filename):
+                filename = secure_filename(photo.filename)
+                base, ext = os.path.splitext(filename)
+                # fix deprecation warning (use timezone-aware now)
+                filename = f"{base}_{int(datetime.now(timezone.utc).timestamp())}{ext}"
+                save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                photo.save(save_path)
+                photo_path = f"uploads/{filename}"
+            else:
+                flash("Please upload a valid image (png, jpg, jpeg, gif).", "danger")
+                return redirect(url_for('create_tool'))
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # INSERT now includes owner_id
+        cursor.execute(
+            "INSERT INTO tools (name, description, photo_path, owner_id, created_at) VALUES (%s, %s, %s, %s, NOW())",
+            (name, description, photo_path, owner_id)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        flash("Tool listing created!", "success")
+        return redirect(url_for('list_tools'))
+
+    # GET
+    return render_template('create_tool.html')
+
 
 # Run the app
 if __name__ == '__main__':

@@ -1,38 +1,70 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>{{ tool.name }} - Availability</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-</head>
-<body class="container py-4">
-  <h2>{{ tool.name }}</h2>
-  <p>{{ tool.description }}</p>
-  <p><strong>Category:</strong> {{ tool.category }}</p>
-  <p><strong>Price:</strong> ${{ tool.daily_price }} per day</p>
+{% extends "base.html" %}
 
-  <div id="calendar" class="my-4"></div>
+{% block title %}{{ tool.name }} – Availability | ToolShare{% endblock %}
 
+{% block content %}
+  <div class="container py-4">
+    <h2 class="mb-1">{{ tool.name }}</h2>
+    {% if tool.description %}
+      <p class="text-muted mb-2">{{ tool.description }}</p>
+    {% endif %}
+    <div class="mb-3">
+      {% if tool.category %}<p class="mb-1"><strong>Category:</strong> {{ tool.category }}</p>{% endif %}
+      {% if tool.daily_price is not none %}<p class="mb-0"><strong>Price:</strong> ${{ '%.2f'|format(tool.daily_price) }} per day</p>{% endif %}
+    </div>
+
+    <div id="calendar" class="my-4"></div>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Tools</a>
+  </div>
+
+  <!-- 1) Availability data as PURE JSON so linters don't parse Jinja as JS -->
+  <script type="application/json" id="availability-data">
+  [
+    {% for d in dates -%}
+      {{ {
+        "title": "Available" if d.is_available else "Unavailable",
+        "start": d.date.isoformat(),
+        "allDay": True,
+        "color": "#198754" if d.is_available else "#dc3545"
+      } | tojson }}{{ "," if not loop.last else "" }}
+    {%- endfor %}
+  ]
+  </script>
+
+  <!-- 2) FullCalendar (global build) -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+  <!-- 3) Clean JS that only reads JSON and renders the calendar -->
   <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      height: 500,
-      events: [
-        {% for d in dates %}
-        {
-            title: '{{ "Available" if d.is_available else "Unavailable" }}',
-            start: '{{ d.date.isoformat() }}',
-            allDay: true,
-            color: '{{ "green" if d.is_available else "red" }}'
-        },
-        {% endfor %}
-      ]
+    document.addEventListener('DOMContentLoaded', function () {
+      const el = document.getElementById('calendar');
+
+      // Parse the JSON payload (no Jinja inside this JS)
+      let events = [];
+      try {
+        const raw = document.getElementById('availability-data').textContent;
+        events = JSON.parse(raw);
+      } catch (e) {
+        // Fallback if JSON is empty/invalid
+        events = [{
+          title: "No availability data",
+          start: new Date().toISOString().slice(0,10),
+          allDay: true,
+          color: "#6c757d"
+        }];
+      }
+
+      const calendar = new FullCalendar.Calendar(el, {
+        initialView: 'dayGridMonth',
+        height: 520,
+        firstDay: 0,
+        events
+      });
+
+      calendar.render();
     });
-    calendar.render();
-  });
-</script>
-</body>
-</html>
+  </script>
+{% endblock %}
+
+
+

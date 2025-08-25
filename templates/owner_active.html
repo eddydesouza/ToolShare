@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Owner: Active Rentals (Out Now) | ToolShare{% endblock %}
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Active Rentals (Out Now)</h2>
+  </div>
+
+  {% if items %}
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Dates</th>
+            <th>Tool</th>
+            <th>Renter</th>
+            <th class="text-end">Deposit</th>
+            <th class="text-end">Status</th>
+            <th class="text-end" style="width:360px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in items %}
+            <tr>
+              <td class="text-nowrap">
+                {{ r.start_date }} – {{ r.end_date }}
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% if r.photo_path %}
+                    <img src="{{ r.photo_path }}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">
+                  {% endif %}
+                  <div>
+                    <div class="fw-semibold">{{ r.tool_name }}</div>
+                    <div class="text-muted small">#{{ r.tool_id }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="fw-semibold">{{ r.first_name }} {{ r.last_name }}</div>
+                <div class="text-muted small">{{ r.email }}</div>
+              </td>
+              <td class="text-end">
+                {% if r.deposit_cents %}
+                  ${{ '%.2f'|format((r.deposit_cents or 0)/100) }}
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                {% if r.completed_at %}
+                  <span class="badge bg-success">Completed</span>
+                {% else %}
+                  <span class="badge bg-info text-dark">Out</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('tool_detail', tool_id=r.tool_id) }}">View Tool</a>
+                <button class="btn btn-outline-info btn-sm"
+                        onclick="loadAvailability({{ r.tool_id }}, '{{ r.tool_name|escape }}')">
+                  Availability
+                </button>
+
+                {% if not r.refunded_at and r.deposit_cents and r.end_date <= today %}
+                  <form class="d-inline" method="post"
+                        action="{{ url_for('owner_return_and_refund', req_id=r.id) }}"
+                        onsubmit="return confirm('Mark returned and refund deposit?');">
+                    <button class="btn btn-primary btn-sm" type="submit">
+                      Mark Returned &amp; Refund Deposit
+                    </button>
+                  </form>
+                {% elif r.deposit_cents and r.refunded_at %}
+                  <span class="badge bg-secondary">Deposit Refunded</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {# Shared modal used across the app for availability #}
+    {% include "_availability_modal.html" %}
+
+    <script>
+      // Enable Bootstrap tooltips (if you add any later)
+      document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.forEach(function (el) { new bootstrap.Tooltip(el) })
+      });
+    </script>
+  {% else %}
+    <div class="alert alert-info">No rentals are currently out.</div>
+  {% endif %}
+</div>
+{% endblock %}

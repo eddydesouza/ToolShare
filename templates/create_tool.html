@@ -1,81 +1,75 @@
 {% extends "base.html" %}
-{% block title %}Create Tool Listing · ToolShare{% endblock %}
 
 {% block content %}
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 m-0">Create Tool Listing</h1>
-    <div>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('list_tools') }}">Back to Tools</a>
+<div class="container py-4">
+  <h2 class="mb-4">Register a Tool</h2>
+
+  <form action="{{ url_for('create_tool') }}" method="post" enctype="multipart/form-data" class="row g-3">
+
+    <!-- Tool Name -->
+    <div class="col-md-6">
+      <label class="form-label">Tool Name</label>
+      <input type="text" name="name" class="form-control" required maxlength="120" placeholder="e.g., DeWalt 20V Drill">
     </div>
-  </div>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <form method="post" enctype="multipart/form-data" class="row g-3">
-        <div class="col-12">
-          <label for="name" class="form-label">Name</label>
-          <input id="name" name="name" class="form-control" type="text"
-                 placeholder="e.g., Compact Rotary Tool" required>
-        </div>
-
-        <div class="col-12">
-          <label for="description" class="form-label">Description</label>
-          <textarea id="description" name="description" class="form-control" rows="5"
-                    placeholder="Short description, condition, notes…" required></textarea>
-        </div>
-
-        <div class="col-md-6">
-          <label for="category" class="form-label">Category</label>
-          <select id="category" name="category" class="form-select" required>
-            <option value="" selected disabled>Choose…</option>
-            <option>Power Tools</option>
-            <option>Hand Tools</option>
-            <option>Garden & Outdoors</option>
-            <option>Automotive</option>
-            <option>Measuring & Layout</option>
-            <option>Other</option>
-          </select>
-        </div>
-
-        <div class="col-md-3">
-          <label for="daily_price" class="form-label">Daily Price (USD)</label>
-          <input id="daily_price" name="daily_price" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" required>
-        </div>
-
-        <div class="col-md-3">
-          <label for="deposit_amount" class="form-label">Deposit (USD)</label>
-          <input id="deposit_amount" name="deposit_amount" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" required>
-        </div>
-
-        <div class="col-12">
-          <label for="photo" class="form-label">Photo (png, jpg, jpeg, gif)</label>
-          <input id="photo" name="photo" class="form-control" type="file" accept=".png,.jpg,.jpeg,.gif">
-          <div class="form-text">Max 5MB</div>
-        </div>
-
-        <!-- TEMP: keep until auth is wired -->
-        <div class="col-12">
-          <label for="owner_id" class="form-label">Owner ID</label>
-          <input id="owner_id" name="owner_id" class="form-control" type="number" min="1" value="1" required>
-          <div class="form-text">Temporary—defaults to user #1.</div>
-        </div>
-
-        <div class="col-12 d-flex gap-2">
-          <button class="btn btn-primary" type="submit">Create</button>
-          <a class="btn btn-outline-secondary" href="{{ url_for('list_tools') }}">Cancel</a>
-        </div>
-      </form>
+    <!-- Category (Hard-coded Dropdown) -->
+    <div class="col-md-6">
+      <label class="form-label">Category</label>
+      <select name="category" class="form-select" required>
+        <option value="" disabled selected>— Select a category —</option>
+        <option value="Power Tools">Power Tools</option>
+        <option value="Hand Tools">Hand Tools</option>
+        <option value="Lawn & Garden">Lawn & Garden</option>
+        <option value="Plumbing">Plumbing</option>
+        <option value="Electrical">Electrical</option>
+        <option value="Automotive">Automotive</option>
+        <option value="Construction">Construction</option>
+        <option value="Other">Other</option>
+      </select>
     </div>
-  </div>
+
+    <!-- Description -->
+    <div class="col-12">
+      <label class="form-label">Description</label>
+      <textarea name="description" class="form-control" rows="4" required placeholder="Condition, accessories included, any notes..."></textarea>
+    </div>
+
+    <!-- Daily Price -->
+    <div class="col-md-6">
+      <label class="form-label">Daily Price (USD)</label>
+      <input type="number" name="daily_price" class="form-control" step="0.01" min="0" required placeholder="e.g., 15.00">
+    </div>
+
+    <!-- Deposit Amount -->
+    <div class="col-md-6">
+      <label class="form-label">Deposit Amount (USD)</label>
+      <input type="number" name="deposit_amount" class="form-control" step="0.01" min="0" required placeholder="e.g., 50.00">
+    </div>
+
+    <!-- Photo -->
+    <div class="col-md-6">
+      <label class="form-label">Photo (optional)</label>
+      <input type="file" name="photo" class="form-control" accept=".png,.jpg,.jpeg,.gif">
+      <div class="form-text">Max 5MB. PNG, JPG, JPEG, or GIF.</div>
+    </div>
+
+    <!-- Availability -->
+    <div class="col-12">
+      <input type="hidden" name="is_available" value="off">
+      <div class="form-check mt-2">
+        <input class="form-check-input" type="checkbox" id="is_available" name="is_available" value="on" checked>
+        <label class="form-check-label" for="is_available">
+          Available for rental
+        </label>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Register Tool</button>
+      <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+
+  </form>
+</div>
 {% endblock %}

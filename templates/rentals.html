@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}My Past Rentals | ToolShare{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-3">My Past Rentals</h2>
+
+  {% if items %}
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Dates</th>
+            <th>Tool</th>
+            <th>Status</th>
+            <th style="width:220px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in items %}
+            <tr>
+              <td class="text-nowrap">
+                {{ r.start_date.strftime('%b %d, %Y') }} – {{ r.end_date.strftime('%b %d, %Y') }}
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  {% if r.photo_path %}
+                    <img src="{{ r.photo_path }}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">
+                  {% endif %}
+                  <div>
+                    <div class="fw-semibold">{{ r.tool_name }}</div>
+                    <div class="text-muted small">#{{ r.tool_id }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                {% if r.status == 'completed' %}
+                  <span class="badge bg-success">Completed</span>
+                {% elif r.status == 'approved' %}
+                  <span class="badge bg-secondary">Approved</span>
+                {% elif r.status == 'pending' %}
+                  <span class="badge bg-warning text-dark">Pending</span>
+                {% elif r.status == 'cancelled' %}
+                  {% if r.responded_at and r.refunded_at %}
+                    <span class="badge bg-danger">Cancelled &amp; Refunded</span>
+                  {% elif r.responded_at %}
+                    <span class="badge bg-danger">Cancelled</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">Cancellation Requested</span>
+                  {% endif %}
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('tool_detail', tool_id=r.tool_id) }}">View Tool</a>
+
+                {# Allow renter to request a cancellation if rental hasn't started and is pending/approved #}
+                {% if today is defined %}
+                  {% set can_cancel = r.status in ['pending','approved'] and r.start_date >= today %}
+                {% else %}
+                  {% set can_cancel = false %}
+                {% endif %}
+                {% if can_cancel %}
+                  <form class="d-inline" method="post"
+                        action="{{ url_for('cancel_rental_request', req_id=r.id) }}"
+                        onsubmit="return confirm('Request cancellation for this rental?');">
+                    <button class="btn btn-outline-danger btn-sm" type="submit">Request Cancel</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info">No past rentals yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

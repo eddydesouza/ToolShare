@@ -1,70 +1,74 @@
 {% extends "base.html" %}
-
-{% block title %}{{ tool.name }} – Availability | ToolShare{% endblock %}
-
+{% block title %}{{ tool.name }} | ToolShare{% endblock %}
 {% block content %}
-  <div class="container py-4">
-    <h2 class="mb-1">{{ tool.name }}</h2>
-    {% if tool.description %}
-      <p class="text-muted mb-2">{{ tool.description }}</p>
-    {% endif %}
-    <div class="mb-3">
-      {% if tool.category %}<p class="mb-1"><strong>Category:</strong> {{ tool.category }}</p>{% endif %}
-      {% if tool.daily_price is not none %}<p class="mb-0"><strong>Price:</strong> ${{ '%.2f'|format(tool.daily_price) }} per day</p>{% endif %}
+<div class="container py-4">
+  <a href="{{ url_for('search_tools') }}" class="btn btn-link">&larr; Back to search</a>
+
+  <div class="row g-4 mt-1">
+    <div class="col-md-5">
+      {% if tool.photo_path %}
+        <img src="{{ tool.photo_path }}" alt="{{ tool.name }}" class="img-fluid rounded">
+      {% else %}
+        <div class="border rounded d-flex align-items-center justify-content-center" style="height:260px;">No image</div>
+      {% endif %}
     </div>
 
-    <div id="calendar" class="my-4"></div>
-    <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Tools</a>
+    <div class="col-md-7">
+      <h2 class="mb-1">{{ tool.name }}</h2>
+      <div class="text-muted mb-2">{{ tool.category }}</div>
+
+      {% if tool.description %}
+        <p>{{ tool.description }}</p>
+      {% endif %}
+
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+        <div class="h5 mb-0">${{ "%.2f"|format(tool.daily_price or 0.00) }} / day</div>
+
+        {% if tool.deposit_amount and tool.deposit_amount > 0 %}
+          <span class="badge bg-info text-dark"
+                data-bs-toggle="tooltip"
+                data-bs-title="Charged at checkout; fully refundable upon successful return.">
+            Refundable deposit: ${{ "%.2f"|format(tool.deposit_amount) }}
+          </span>
+        {% else %}
+          <span class="badge bg-secondary">No deposit required</span>
+        {% endif %}
+      </div>
+
+      {% if tool.deposit_amount and tool.deposit_amount > 0 %}
+        <div class="small text-muted mb-2">
+          * Deposit appears as a separate line at checkout and on your receipt.
+        </div>
+      {% endif %}
+
+      <div class="my-2">
+        {% if tool.is_available %}
+          <span class="badge bg-success">Available</span>
+        {% else %}
+          <span class="badge bg-secondary">Unavailable</span>
+        {% endif %}
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <a class="btn btn-outline-secondary" href="{{ url_for('public_profile', user_id=owner.id) }}">View Owner Profile</a>
+        <a class="btn btn-primary" href="{{ url_for('search_tools', search_term=tool.name) }}">Find Similar</a>
+        <button class="btn btn-info"
+                onclick="loadAvailability({{ tool.id }}, '{{ tool.name|escape }}')">
+          Check Availability
+        </button>
+      </div>
+    </div>
   </div>
+</div>
 
-  <!-- 1) Availability data as PURE JSON so linters don't parse Jinja as JS -->
-  <script type="application/json" id="availability-data">
-  [
-    {% for d in dates -%}
-      {{ {
-        "title": "Available" if d.is_available else "Unavailable",
-        "start": d.date.isoformat(),
-        "allDay": True,
-        "color": "#198754" if d.is_available else "#dc3545"
-      } | tojson }}{{ "," if not loop.last else "" }}
-    {%- endfor %}
-  ]
-  </script>
+<script>
+  // Enable Bootstrap tooltips on this page (for the deposit badge)
+  document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (el) { new bootstrap.Tooltip(el) })
+  });
+</script>
 
-  <!-- 2) FullCalendar (global build) -->
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-
-  <!-- 3) Clean JS that only reads JSON and renders the calendar -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const el = document.getElementById('calendar');
-
-      // Parse the JSON payload (no Jinja inside this JS)
-      let events = [];
-      try {
-        const raw = document.getElementById('availability-data').textContent;
-        events = JSON.parse(raw);
-      } catch (e) {
-        // Fallback if JSON is empty/invalid
-        events = [{
-          title: "No availability data",
-          start: new Date().toISOString().slice(0,10),
-          allDay: true,
-          color: "#6c757d"
-        }];
-      }
-
-      const calendar = new FullCalendar.Calendar(el, {
-        initialView: 'dayGridMonth',
-        height: 520,
-        firstDay: 0,
-        events
-      });
-
-      calendar.render();
-    });
-  </script>
+{# Include shared modal/styles/scripts #}
+{% include "_availability_modal.html" %}
 {% endblock %}
-
-
-

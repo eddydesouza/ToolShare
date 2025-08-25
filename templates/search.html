@@ -1,122 +1,136 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Search Tools</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container py-4">
+{% extends "base.html" %}
+
+{% block title %}Search Tools | ToolShare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
   <h2 class="mb-3">Find a Tool</h2>
 
   <form method="post" class="row gy-2 gx-3 align-items-end mb-4">
-  <div class="col-md-5">
-    <label for="search_term" class="form-label">Search term</label>
-    <input type="text" id="search_term" name="search_term" class="form-control"
-           placeholder="e.g., drill, mower, ladder"
-           value="{{ search_term or '' }}">
-  </div>
+    <div class="col-md-5">
+      <label for="search_term" class="form-label">Search term</label>
+      <input type="text" id="search_term" name="search_term" class="form-control"
+             placeholder="e.g., drill, mower, ladder"
+             value="{{ search_term or '' }}">
+    </div>
 
-  <div class="col-md-4">
-    <label for="category" class="form-label">Category</label>
-    <select id="category" name="category" class="form-select">
-      <option value="">All categories</option>
-      {% for cat in categories %}
-        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
-      {% endfor %}
-    </select>
-  </div>
+    <div class="col-md-4">
+      <label for="category" class="form-label">Category</label>
+      <select id="category" name="category" class="form-select">
+        <option value="">All categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
-  <div class="col-md-3 d-grid">
-    <button type="submit" class="btn btn-primary">Search</button>
-  </div>
+    <!-- ZIP + Radius -->
+    <div class="col-md-2">
+      <label for="zip" class="form-label">Your ZIP</label>
+      <input type="text" id="zip" name="zip" class="form-control"
+             placeholder="e.g., 39201"
+             value="{{ zip or '' }}"
+             pattern="^\d{5}(-\d{4})?$"
+             title="Enter a valid 5-digit ZIP or ZIP+4">
+    </div>
+
+    <div class="col-md-2">
+      <label for="radius" class="form-label">Within</label>
+      <select id="radius" name="radius" class="form-select">
+        <option value="">Any distance</option>
+        {% for r in [10, 25, 50, 100] %}
+          <option value="{{ r }}" {% if radius and radius|string == r|string %}selected{% endif %}>{{ r }} miles</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-3 d-flex">
+      <button type="submit" class="btn btn-primary me-2">Search</button>
+      <a href="{{ url_for('index') }}" class="btn btn-secondary">Home</a>
+    </div>
   </form>
 
-
   {% if tools %}
-    <h5 class="mb-3">Results ({{ tools|length }})</h5>
+    <div class="d-flex align-items-center gap-3 mb-2">
+      <h5 class="mb-0">Results ({{ tools|length }})</h5>
+      <div class="small text-muted">
+        <span class="badge bg-success align-text-bottom">Available</span> = bookable today
+        &middot;
+        <span class="badge bg-info text-dark align-text-bottom">Refundable deposit</span> = charged at checkout, refunded after return
+      </div>
+    </div>
+
     <div class="list-group">
       {% for t in tools %}
         <div class="list-group-item">
-          <div class="d-flex justify-content-between">
-            <strong>{{ t.name }}</strong>
-            <span>
+          <div class="d-flex justify-content-between flex-wrap gap-2">
+            <div class="pe-2">
+              <strong>{{ t.name }}</strong>
+              <div class="text-muted small">{{ t.category }}</div>
+            </div>
+
+            <div class="text-end">
+              <div class="fw-semibold">
                 ${{ "%.2f"|format(t.daily_price or 0.00) }} / day
-                {% if t.deposit_amount is not none %} &middot; Deposit: ${{ "%.2f"|format(t.deposit_amount) }}{% endif %}
-            </span>
+                {% if t.deposit_amount and t.deposit_amount > 0 %}
+                  <span class="badge bg-info text-dark ms-2"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="Charged at checkout; fully refundable upon successful return.">
+                    Refundable deposit: ${{ "%.2f"|format(t.deposit_amount) }}
+                  </span>
+                {% endif %}
+              </div>
+              {% if t.distance_mi is defined %}
+                <div class="small text-muted">~{{ "%.1f"|format(t.distance_mi) }} mi away</div>
+              {% endif %}
+            </div>
           </div>
-          <div class="text-muted small">{{ t.category }}</div>
-          <p class="mb-1">{{ t.description }}</p>
-          {% if t.is_available %}
-            <span class="badge bg-success">Available</span>
-          {% else %}
-            <span class="badge bg-secondary">Unavailable</span>
+
+          {% if t.description %}
+            <p class="mb-2 mt-2">{{ t.description }}</p>
           {% endif %}
-        <div class="mt-2">
-            <button class="btn btn-outline-info btn-sm" onclick="loadAvailability({{ t.id }}, '{{ t.name }}')">View Availability</button>
-        </div>
+
+          <div class="d-flex align-items-center gap-2">
+            {% if t.is_available %}
+              <span class="badge bg-success">Available</span>
+            {% else %}
+              <span class="badge bg-secondary">Unavailable</span>
+            {% endif %}
+
+            {% if t.deposit_amount and t.deposit_amount > 0 %}
+              <span class="text-muted small">
+                * Deposit shown above will appear as a separate line at checkout
+              </span>
+            {% endif %}
+          </div>
+
+          <div class="mt-2 d-flex flex-wrap gap-2">
+            <button class="btn btn-outline-info btn-sm"
+                    onclick="loadAvailability({{ t.id }}, '{{ t.name|escape }}')">
+              View Availability
+            </button>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('tool_detail', tool_id=t.id) }}">View Details</a>
+            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('public_profile', user_id=t.owner_id) }}">Owner Profile</a>
+          </div>
         </div>
       {% endfor %}
     </div>
-  {% elif search_term is not none or selected_category %}
+
+    <script>
+      // Enable Bootstrap tooltips on this page (for the deposit badge)
+      document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+          new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+      });
+    </script>
+
+  {% elif search_term is not none or selected_category or zip or radius %}
     <div class="alert alert-warning">No tools matched your search.</div>
   {% endif %}
-
-<!-- Modal -->
-<div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="calendarModalLabel">Tool Availability</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div id="calendar"></div>
-      </div>
-    </div>
-  </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-
-<script>
-  let calendar;
-
-  function loadAvailability(toolId, toolName) {
-    fetch(`/api/tool_availability/${toolId}`)
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('calendarModalLabel').innerText = `${toolName} Availability`;
-
-        const modalEl = document.getElementById('calendarModal');
-        const calendarEl = document.getElementById('calendar');
-
-        // Show the modal first
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
-
-        // Wait for modal to be fully visible before rendering calendar
-        modalEl.addEventListener('shown.bs.modal', function () {
-          if (!calendar) {
-            calendar = new FullCalendar.Calendar(calendarEl, {
-              initialView: 'dayGridMonth',
-              height: 500,
-            });
-          } else {
-            calendar.destroy(); // Recreate it to avoid duplicate rendering
-            calendar = new FullCalendar.Calendar(calendarEl, {
-              initialView: 'dayGridMonth',
-              height: 500,
-            });
-          }
-
-          calendar.render();
-          calendar.removeAllEvents();
-          calendar.addEventSource(data.events);
-        }, { once: true }); // Ensure this only fires once per open
-      });
-  }
-</script>
-
-
-</body>
-</html>
+{# Include shared modal/styles/scripts #}
+{% include "_availability_modal.html" %}
+{% endblock %}

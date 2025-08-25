@@ -6,7 +6,7 @@
 
   <h2 class="mb-4">Edit Profile</h2>
 
-  <form action="{{ url_for('user.update_profile') }}" method="post" class="row g-3" novalidate>
+  <form action="{{ url_for('update_profile') }}" method="post" class="row g-3" novalidate>
     <input type="hidden" name="user_id" value="{{ user.id }}">
 
     <div class="col-md-6">
@@ -58,13 +58,6 @@
     <div class="col-12 d-flex align-items-center gap-3 mt-4">
       <button type="submit" class="btn btn-success">Update Profile</button>
       <a href="{{ url_for('index') }}" class="btn btn-secondary">Return Home</a>
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-          {% if category == 'success' %}
-            <span class="text-success fw-bold ms-2">{{ message }}</span>
-          {% endif %}
-        {% endfor %}
-      {% endwith %}
     </div>
   </form>
 

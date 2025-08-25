@@ -1,70 +1,141 @@
 {% extends "base.html" %}
-
 {% block title %}Home | ToolShare{% endblock %}
 
 {% block content %}
-  <!-- Welcome Header -->
-  <div class="text-center row mb-4">
-    <h1 class="display-4">Welcome to ToolShare</h1>
-    <p>Find the tools you need to complete your next DIY project</p>
-  </div>
-
-  <!-- Primary Actions -->
-  <div class="row text-center mb-4">
-    <div class="col-lg align-self-center">
-      <a href="{{ url_for('register_artisan') }}" class="btn btn-primary m-2 px-4">Register a Tool</a>
-      <a href="{{ url_for('search.search_tools') }}" class="btn btn-primary m-2 px-4">Search Tools</a>
-      <a href="{{ url_for('user.profile', user_id=1) }}" class="btn btn-primary m-2 px-4">View/Edit Profile</a>
-      <a href="{{ url_for('view_cart') }}" class="btn btn-outline-primary m-2 px-4">View Cart</a>
-    </div>
-  </div>
-
-  <!-- Tool Listings -->
-  {% if tools %}
-    <div class="row">
-      {% for tool in tools %}
-        <div class="col-md-6 col-lg-4 mb-4">
-          <div class="card h-100">
-            {% if tool.image_url %}
-              <img src="{{ tool.image_url }}" class="card-img-top" alt="{{ tool.name }}">
-            {% endif %}
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title">{{ tool.name }}</h5>
-              <p class="card-text">{{ tool.description }}</p>
-              <p class="mb-3"><strong>${{ '%.2f'|format(tool.daily_price) }}</strong> per day</p>
-
-              <!-- Add to Cart -->
-              <form action="{{ url_for('add_to_cart', tool_id=tool.id) }}" method="POST" class="d-flex flex-column flex-sm-row align-items-center gap-2 mt-auto">
-                <input type="number" name="quantity" min="1" value="1" class="form-control" style="max-width: 90px;" required>
-                <button type="submit" class="btn btn-success w-100 w-sm-auto">Add to Cart</button>
-              </form>
-
-              <!-- Direct Rent / Subscribe -->
-              <a href="{{ url_for('subscribe', artisan_id=tool.id) }}" class="btn btn-primary mt-2 w-100">Rent this Tool</a>
-            </div>
-          </div>
+<!-- How it works (above search) -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="h3 mb-4 text-center">How ToolShare Works</h2>
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="p-4 h-100 border rounded-3">
+          <div class="display-6">1</div>
+          <h3 class="h5 mt-2">Search</h3>
+          <p class="text-muted mb-0">Find tools by name or category and check calendar availability.</p>
         </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="mt-3 mb-3 row">
-      <div class="col-lg align-self-center text-center">
-        <p><strong>No tools available right now.</strong></p>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 h-100 border rounded-3">
+          <div class="display-6">2</div>
+          <h3 class="h5 mt-2">Reserve</h3>
+          <p class="text-muted mb-0">Pick available dates and add the tool to your cart.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 h-100 border rounded-3">
+          <div class="display-6">3</div>
+          <h3 class="h5 mt-2">Pickup & Go</h3>
+          <p class="text-muted mb-0">Coordinate pickup, use the tool, and return it—simple.</p>
+        </div>
       </div>
     </div>
-    <div class="row justify-content-center">
-      <div class="col-lg-2">
-        <img class="rounded img-fluid img-thumbnail" src="{{ url_for('static', filename='images/sam-clarke-ZEfFgaXVaV4-unsplash.jpg') }}" alt="Workshop photo by Sam Clarke" />
-        <small class="text-muted d-block">Photo by <a class="text-muted" href="https://unsplash.com/@clarke_designs_photography">Sam Clarke</a></small>
-      </div>
-      <div class="col-lg-2">
-        <img class="rounded img-fluid img-thumbnail" src="{{ url_for('static', filename='images/marissa-daeger-jCctpZe3sZo-unsplash.jpg') }}" alt="Tools photo by Marissa Daeger" />
-        <small class="text-muted d-block">Photo by <a class="text-muted" href="https://unsplash.com/@marissadaeger">Marissa Daeger</a></small>
+  </div>
+</section>
+
+<!-- Hero (search) -->
+<section class="py-5 bg-light rounded-3">
+  <div class="container">
+    <div class="row align-items-center gy-4">
+      <div class="col-lg-12">
+        <h1 class="display-5 fw-bold mb-2">Find the right tool, right now.</h1>
+        <p class="lead text-muted mb-4">Borrow from neighbors and local owners to finish your next project without buying new.</p>
+
+        {% if session.user_id %}
+          <!-- Logged-in: real form posts to /search -->
+          <form action="{{ url_for('search_tools') }}" method="post" class="row gx-2 gy-2">
+            <div class="col-md-7">
+              <input type="text" name="search_term" class="form-control form-control-lg"
+                     placeholder="e.g., drill, mower, ladder">
+            </div>
+            <div class="col-md-3">
+              <select name="category" class="form-select form-select-lg">
+                <option value="">All categories</option>
+                {% if categories %}
+                  {% for c in categories %}
+                    <option value="{{ c }}">{{ c }}</option>
+                  {% endfor %}
+                {% endif %}
+              </select>
+            </div>
+            <div class="col-md-2 d-grid">
+              <button class="btn btn-primary btn-lg" type="submit">Search</button>
+            </div>
+          </form>
+        {% else %}
+          <!-- Logged-out: let them type, but redirect to login -->
+          <form id="guestSearchForm" class="row gx-2 gy-2">
+            <div class="col-md-7">
+              <input type="text" id="guestSearchTerm" class="form-control form-control-lg"
+                     placeholder="e.g., drill, mower, ladder">
+            </div>
+            <div class="col-md-3">
+              <select id="guestCategory" class="form-select form-select-lg">
+                <option value="">All categories</option>
+                {% if categories %}
+                  {% for c in categories %}
+                    <option value="{{ c }}">{{ c }}</option>
+                  {% endfor %}
+                {% endif %}
+              </select>
+            </div>
+            <div class="col-md-2 d-grid">
+              <button type="submit" class="btn btn-primary btn-lg">Login to Search</button>
+            </div>
+          </form>
+          <script>
+            document.getElementById('guestSearchForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const term = document.getElementById('guestSearchTerm').value || '';
+                const cat  = document.getElementById('guestCategory').value || '';
+
+                const params = new URLSearchParams();
+                if (term) params.set('search_term', term);
+                if (cat)  params.set('category', cat);
+
+                let nextUrl = "{{ url_for('search_tools') }}";
+                const qs = params.toString();
+                if (qs) nextUrl += "?" + qs;
+
+                window.location.href = "{{ url_for('login') }}?next=" + encodeURIComponent(nextUrl);
+            });
+          </script>
+
+        {% endif %}
+
+        <!-- Secondary CTAs -->
+        <div class="d-flex gap-2 mt-3">
+          <a href="{{ url_for('create_tool') }}" class="btn btn-outline-primary">Register a Tool</a>
+          <a href="{{ url_for('search_tools') }}" class="btn btn-outline-secondary">Browse All</a>
+        </div>
       </div>
     </div>
-  {% endif %}
+  </div>
+</section>
+
+<!-- Why ToolShare -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="h3 mb-4 text-center">Why ToolShare?</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="p-4 border rounded-3 h-100">
+          <h3 class="h6 mb-2">Save Money</h3>
+          <p class="text-muted mb-0">Rent what you need only when you need it—no storage or maintenance costs.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 border rounded-3 h-100">
+          <h3 class="h6 mb-2">Save Time</h3>
+          <p class="text-muted mb-0">Calendar availability lets you reserve specific dates in a click.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4 border rounded-3 h-100">
+          <h3 class="h6 mb-2">Support Community</h3>
+          <p class="text-muted mb-0">Put idle tools to work and help neighbors finish their projects.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}
-
-
-
-

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }} | ToolShare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="alert alert-{{ 'danger' if code|int >= 500 else 'warning' }}">
+    <h3 class="mb-2">Error {{ code }}</h3>
+    <p class="mb-0">{{ message or "Something went wrong." }}</p>
+  </div>
+  <div class="mt-3">
+    <a href="{{ url_for('index') }}" class="btn btn-primary">Go Home</a>
+    <a href="{{ url_for('search_tools') }}" class="btn btn-outline-secondary">Search Tools</a>
+  </div>
+</div>
+{% endblock %}

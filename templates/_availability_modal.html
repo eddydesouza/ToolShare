@@ -1,0 +1,128 @@
+{# Reusable availability modal + styles + script (no library includes) #}
+
+<!-- Availability Modal -->
+<div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="calendarModalLabel">Tool Availability</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="calendar"></div>
+
+        <!-- Legend -->
+        <div class="mt-3 d-flex align-items-center gap-3">
+          <div>
+            <span class="legend-box" style="background-color:#14532d;"></span>
+            <span>Available</span>
+          </div>
+          <div>
+            <span class="legend-box" style="background-color:#fca5a5;"></span>
+            <span>Unavailable</span>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Add-to-cart (tool + selected date) -->
+        <form id="addDateForm" method="POST" action="{{ url_for('add_to_cart_date') }}">
+          <input type="hidden" name="tool_id" id="selected_tool_id">
+          <input type="hidden" name="selected_date" id="selected_date">
+          <div class="d-flex align-items-center gap-2">
+            <span id="selected_date_display" class="text-muted">No date selected</span>
+            <button type="submit" id="add_to_cart_btn" class="btn btn-primary btn-sm" disabled>
+              Add to Cart
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  .legend-box {
+    display:inline-block;
+    width:18px;
+    height:18px;
+    margin-right:6px;
+    border:1px solid #000;
+    vertical-align:middle;
+  }
+  /* Darker green for available */
+  .fc-day.available { background-color: #14532d !important; color: white !important; }
+  /* Softer red for unavailable */
+  .fc-day.unavailable { background-color: #fca5a5 !important; color: #000 !important; }
+  /* Hover effects */
+  .fc-day.available:hover { background-color: #166534 !important; }
+  .fc-day.unavailable:hover { background-color: #f87171 !important; }
+</style>
+
+<script>
+  let calendar;
+  let availableDates = new Set();
+
+  // Call this from any page button: loadAvailability(toolId, toolName)
+  function loadAvailability(toolId, toolName) {
+    fetch(`/api/tool_availability/${toolId}`)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('calendarModalLabel').innerText = `${toolName} Availability`;
+
+        // Reset form state
+        document.getElementById('selected_tool_id').value = toolId;
+        document.getElementById('selected_date').value = '';
+        document.getElementById('selected_date_display').innerText = 'No date selected';
+        document.getElementById('add_to_cart_btn').disabled = true;
+
+        // Collect available dates
+        availableDates = new Set();
+        (data.events || []).forEach(ev => {
+          if (ev.title === 'Available' && ev.start) {
+            const ymd = ev.start.slice(0, 10);
+            availableDates.add(ymd);
+          }
+        });
+
+        const modalEl = document.getElementById('calendarModal');
+        const calendarEl = document.getElementById('calendar');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+        modalEl.addEventListener('shown.bs.modal', function () {
+          if (calendar) {
+            calendar.destroy();
+          }
+          calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: 500,
+            dayCellDidMount: function(arg) {
+              const ymd = arg.date.toISOString().slice(0, 10);
+              if (availableDates.has(ymd)) {
+                arg.el.classList.add("available");
+              } else {
+                arg.el.classList.add("unavailable");
+              }
+            },
+            dateClick: function(info) {
+              const ymd = info.dateStr;
+              if (availableDates.has(ymd)) {
+                document.getElementById('selected_date').value = ymd;
+                document.getElementById('selected_date_display').innerText = `Selected: ${ymd}`;
+                document.getElementById('add_to_cart_btn').disabled = false;
+              } else {
+                document.getElementById('selected_date').value = '';
+                document.getElementById('selected_date_display').innerText = 'Selected date is unavailable';
+                document.getElementById('add_to_cart_btn').disabled = true;
+              }
+            }
+          });
+
+          calendar.render();
+        }, { once: true });
+      });
+  }
+</script>

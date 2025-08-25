@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ owner.first_name }} {{ owner.last_name }} | Owner Profile{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <a href="{{ url_for('search_tools') }}" class="btn btn-link">&larr; Back to search</a>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h3 class="card-title mb-1">{{ owner.first_name }} {{ owner.last_name }}</h3>
+      <div class="text-muted">
+        {% if owner.city %}{{ owner.city }}, {% endif %}{% if owner.state %}{{ owner.state }}{% endif %}
+        {% if owner.zip_code %}&middot; ZIP {{ owner.zip_code }}{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <h5 class="mb-3">Tools by {{ owner.first_name }}</h5>
+
+  {% if tools %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      {% for t in tools %}
+        <div class="col">
+          <div class="card h-100">
+            {% if t.photo_path %}
+              <img src="{{ t.photo_path }}" class="card-img-top" alt="{{ t.name }}" style="object-fit:cover;height:180px;">
+            {% endif %}
+
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title mb-1">{{ t.name }}</h5>
+              <div class="text-muted small mb-2">{{ t.category }}</div>
+
+              <div class="mt-auto">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <div class="fw-semibold mb-0">
+                    ${{ "%.2f"|format(t.daily_price or 0.00) }} / day
+                  </div>
+
+                  {% if t.deposit_amount and t.deposit_amount > 0 %}
+                    <span class="badge bg-info text-dark"
+                          data-bs-toggle="tooltip"
+                          data-bs-title="Charged at checkout; fully refundable upon successful return.">
+                      Refundable deposit: ${{ "%.2f"|format(t.deposit_amount) }}
+                    </span>
+                  {% else %}
+                    <span class="badge bg-secondary">No deposit required</span>
+                  {% endif %}
+                </div>
+
+                {% if t.deposit_amount and t.deposit_amount > 0 %}
+                  <div class="small text-muted mt-1">
+                    * Deposit appears as a separate line at checkout and on your receipt.
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="card-footer bg-transparent d-flex gap-2">
+              <a class="btn btn-outline-primary btn-sm" href="{{ url_for('tool_detail', tool_id=t.id) }}">View Details</a>
+              <button class="btn btn-outline-info btn-sm"
+                      onclick="loadAvailability({{ t.id }}, '{{ t.name|escape }}')">
+                Availability
+              </button>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">This owner hasn’t listed any tools yet.</div>
+  {% endif %}
+</div>
+
+<script>
+  // Enable Bootstrap tooltips on this page (for the deposit badges)
+  document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (el) { new bootstrap.Tooltip(el) })
+  });
+</script>
+
+{# Include shared modal/styles/scripts #}
+{% include "_availability_modal.html" %}
+{% endblock %}

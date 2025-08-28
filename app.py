@@ -9,6 +9,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import mysql.connector
 import stripe
+import smtplib
+from email.mime.text import MIMEText
+from email.utils import formataddr
+import click
 
 # =========================
 # Environment & DB Setup
@@ -25,6 +29,13 @@ db_config = {
     'database': os.getenv('DB_NAME'),
     'ssl_ca': os.getenv('SSL_CA')
 }
+
+SMTP_HOST = os.getenv("SMTP_HOST")
+SMTP_PORT = int(os.getenv("SMTP_PORT"))
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PASS = os.getenv("SMTP_PASS")
+SMTP_USE_TLS = (os.getenv("SMTP_USE_TLS", "true").lower() == "true")
+FROM_EMAIL = os.getenv("FROM_EMAIL")
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)
@@ -789,8 +800,6 @@ def create_tool():
     # GET
     return render_template('create_tool.html', default_available=True)
 
-# -------- NEW ROUTES: Tool detail & Owner public profile --------
-
 @app.route('/tools/<int:tool_id>', methods=['GET'])
 def tool_detail(tool_id):
     tool = dict_getone("""
@@ -829,8 +838,6 @@ def public_profile(user_id):
     """, (user_id,))
 
     return render_template('public_profile.html', owner=owner, tools=owner_tools)
-
-# ---------------------------------------------------------------
 
 @app.route('/add_to_cart/<int:tool_id>', methods=['POST'])
 def add_to_cart(tool_id):
@@ -972,6 +979,133 @@ def logout():
     session.pop('user_id', None)
     flash("You have been logged out.", "info")
     return redirect(url_for('index'))
+
+# -------------------------
+# Email Notifications
+# -------------------------
+def send_email(to_addr: str, subject: str, body_text: str, from_display: str = None):
+    """Send a plaintext email via SMTP."""
+    sender = FROM_EMAIL
+    if from_display:
+        sender = formataddr((from_display, FROM_EMAIL.split("<")[-1].strip(" >"))) if "<" in FROM_EMAIL else formataddr((from_display, FROM_EMAIL))
+
+    msg = MIMEText(body_text, "plain", "utf-8")
+    msg["Subject"] = subject
+    msg["From"] = sender
+    msg["To"] = to_addr
+
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as s:
+        if SMTP_USE_TLS:
+            s.starttls()
+        if SMTP_USER:
+            s.login(SMTP_USER, SMTP_PASS)
+        s.send_message(msg)
+
+def notification_already_sent(rental_request_id: int, kind: str, start_date):
+    row = dict_getone("""
+        SELECT id
+        FROM notification_log
+        WHERE rental_request_id = %s
+          AND kind = %s
+          AND scheduled_for = %s
+        LIMIT 1
+    """, (rental_request_id, kind, start_date))
+    return bool(row)
+
+def log_notification_sent(rental_request_id: int, kind: str, start_date):
+    exec_write("""
+        INSERT INTO notification_log (rental_request_id, kind, scheduled_for)
+        VALUES (%s, %s, %s)
+        ON DUPLICATE KEY UPDATE sent_at = sent_at
+    """, (rental_request_id, kind, start_date))
+
+def send_start_reminders_for_tomorrow():
+    """
+    Sends:
+      - 'renter_start' to each renter
+      - 'owner_start' to each owner
+    for rentals starting tomorrow (status: approved).
+    Uses notification_log to avoid duplicates.
+    """
+    rows = dict_query("""
+        SELECT
+            rr.id AS rr_id,
+            rr.start_date, rr.end_date, rr.status,
+            t.id AS tool_id, t.name AS tool_name,
+            ou.id AS owner_id, ou.first_name AS owner_first, ou.last_name AS owner_last, ou.email AS owner_email,
+            r.id  AS renter_id, r.first_name  AS renter_first, r.last_name  AS renter_last, r.email  AS renter_email
+        FROM rental_requests rr
+        JOIN tools t   ON t.id = rr.tool_id
+        JOIN users r   ON r.id = rr.renter_id
+        JOIN users ou  ON ou.id = t.owner_id
+        WHERE rr.status IN ('approved')
+          AND rr.start_date = CURDATE() + INTERVAL 1 DAY
+    """)
+
+    sent_count = 0
+    for row in rows:
+        rr_id = row["rr_id"]
+        sd = row["start_date"]
+        ed = row["end_date"]
+        tool = row["tool_name"]
+
+        # 1) Renter reminder
+        if row.get("renter_email") and not notification_already_sent(rr_id, "renter_start", sd):
+            renter_name = f'{row.get("renter_first","").strip()} {row.get("renter_last","").strip()}'.strip()
+            body = (
+                f"Hi {renter_name or 'there'},\n\n"
+                f"This is a reminder that your rental starts tomorrow.\n\n"
+                f"Tool: {tool}\n"
+                f"Start: {sd}\n"
+                f"End:   {ed}\n\n"
+                f"Please coordinate pickup/hand-off with the owner if needed.\n\n"
+                f"— ToolShare"
+            )
+            try:
+                send_email(row["renter_email"], f"Reminder: your {tool} rental starts tomorrow", body, from_display="ToolShare")
+                log_notification_sent(rr_id, "renter_start", sd)
+                sent_count += 1
+            except Exception as e:
+                app.logger.exception(f"Email to renter failed for rr {rr_id}: {e}")
+
+        # 2) Owner reminder
+        if row.get("owner_email") and not notification_already_sent(rr_id, "owner_start", sd):
+            owner_name = f'{row.get("owner_first","").strip()} {row.get("owner_last","").strip()}'.strip()
+            body = (
+                f"Hi {owner_name or 'there'},\n\n"
+                f"Reminder: your tool is scheduled to be rented starting tomorrow.\n\n"
+                f"Tool: {tool}\n"
+                f"Start: {sd}\n"
+                f"End:   {ed}\n"
+                f"Renter: {row.get('renter_first','').strip()} {row.get('renter_last','').strip()} ({row.get('renter_email','')})\n\n"
+                f"Ensure the item is ready for pickup/hand-off.\n\n"
+                f"— ToolShare"
+            )
+            try:
+                send_email(row["owner_email"], f"Reminder: {tool} is rented tomorrow", body, from_display="ToolShare")
+                log_notification_sent(rr_id, "owner_start", sd)
+                sent_count += 1
+            except Exception as e:
+                app.logger.exception(f"Email to owner failed for rr {rr_id}: {e}")
+
+    return sent_count
+
+@app.cli.command("send-notifs")
+def cli_send_notifs():
+    """Run due notifications (start-of-rental reminders for tomorrow)."""
+    count = send_start_reminders_for_tomorrow()
+    click.echo(f"Sent {count} notifications.")
+
+# ----------------------------------
+# How to run email notifications
+# ----------------------------------
+#
+# On a Linux machine (from the project dir)
+# export FLASK_APP=app.py
+# flask send-notifs
+#
+# On Windows (Powershell)
+# $env:FLASK_APP="app.py"; flask send-notifs
 
 # =========================
 # Main

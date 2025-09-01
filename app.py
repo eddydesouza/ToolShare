@@ -30,12 +30,12 @@ db_config = {
     'ssl_ca': os.getenv('SSL_CA')
 }
 
-SMTP_HOST = os.getenv("SMTP_HOST")
-SMTP_PORT = int(os.getenv("SMTP_PORT"))
-SMTP_USER = os.getenv("SMTP_USER")
-SMTP_PASS = os.getenv("SMTP_PASS")
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))   # default: 587 (TLS)
+SMTP_USER = os.getenv("SMTP_USER", "youremail@example.com")
+SMTP_PASS = os.getenv("SMTP_PASS", "")
 SMTP_USE_TLS = (os.getenv("SMTP_USE_TLS", "true").lower() == "true")
-FROM_EMAIL = os.getenv("FROM_EMAIL")
+FROM_EMAIL = os.getenv("FROM_EMAIL", "youremail@example.com")
 
 def get_db_connection():
     return mysql.connector.connect(**db_config)

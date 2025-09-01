@@ -7,7 +7,7 @@
   <div class="row g-4 mt-1">
     <div class="col-md-5">
       {% if tool.photo_path %}
-        <img src="{{ tool.photo_path }}" alt="{{ tool.name }}" class="img-fluid rounded">
+        <img class="img-fluid" src="{{ url_for('static', filename=tool_photo_path(tool.photo_path)) }}" alt="{{ tool.name }}">
       {% else %}
         <div class="border rounded d-flex align-items-center justify-content-center" style="height:260px;">No image</div>
       {% endif %}

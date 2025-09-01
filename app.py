@@ -96,6 +96,15 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def tool_photo_path(photo_path: str | None) -> str:
+    if not photo_path:
+        return 'images/default-tool.png'
+    path = os.path.join("static", photo_path.replace("\\", "/"))
+    if not os.path.exists(path):
+        return 'images/default-tool.png'
+
+    return photo_path.replace("\\", "/")
+
 def go_cart_or_search():
     """Prefer cart; fall back to search without raising BuildError."""
     try:
@@ -109,6 +118,8 @@ def go_cart_or_search():
                 return redirect(url_for('search.search_tools'))
             except BuildError:
                 return redirect(url_for('index'))
+
+app.jinja_env.globals.update(tool_photo_path=tool_photo_path)
 
 # =========================
 # Auth Gate: Index public, most else requires login

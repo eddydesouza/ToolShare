@@ -8,10 +8,8 @@
   {% set cart_data = cart if cart is defined else (session.cart or {}) %}
 
   {% if cart_data %}
-    {% set ns = namespace(rent_total=0.0, deposit_total=0.0) %}
-
     <div class="alert alert-secondary py-2">
-      Deposits may be fully refunded upon successful return.
+      Deposits are charged <strong>once per tool</strong> and may be refunded upon successful return.
     </div>
 
     <div class="table-responsive">
@@ -19,53 +17,69 @@
         <thead class="table-dark">
           <tr>
             <th>Tool</th>
-            <!-- Narrow columns: shrink to content -->
-            <th class="text-end text-nowrap" style="width:1%;">Qty</th>
             <th class="text-end text-nowrap" style="width:1%;">Daily Price</th>
-            <th class="text-end text-nowrap" style="width:1%;">Deposit</th>
+            <th style="width:1%;">Action</th>
           </tr>
         </thead>
         <tbody>
+          {# Track which tool_ids have already displayed the deposit badge #}
+          {% set ns = namespace(seen=[]) %}
+
           {% for key, item in cart_data.items() %}
             {% set price = (item.price or 0.0) %}
-            {% set deposit = (item.deposit or 0.0) %}
-            {% set qty = (item.quantity or 1) %}
-            {% set ns.rent_total = ns.rent_total + (price * qty) %}
-            {% set ns.deposit_total = ns.deposit_total + (deposit * qty) %}
+            {% set dep = (item.deposit or 0.0) %}
+            {% set tid = item.tool_id %}
+            {% set show_deposit = (tid and (tid not in ns.seen) and dep > 0) %}
+            {% if show_deposit %}{% set _ = ns.seen.append(tid) %}{% endif %}
+
             <tr>
               <td>
-                <!-- Left: name/date; Right: Remove (centered vertically) -->
-                <div class="d-flex justify-content-between align-items-start gap-2">
-                  <div>
-                    <div class="fw-semibold">{{ item.name }}</div>
-                    {% if item.date %}
-                      <div class="text-muted small">Date: {{ item.date }}</div>
+                <div class="d-flex flex-column gap-1">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="fw-semibold">{{ item.name }}</span>
+
+                    {# Badge only on the first occurrence of a tool that has a deposit #}
+                    {% if show_deposit %}
+                      <span class="badge text-bg-warning">
+                        Deposit charged: ${{ '%.2f'|format(dep) }}
+                      </span>
                     {% endif %}
                   </div>
-                  <form method="POST"
-                        action="{{ url_for('remove_from_cart', item_key=key) }}"
-                        class="ms-2 align-self-center">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
-                  </form>
+
+                  {% if item.date %}
+                    <div class="text-muted small">Date: {{ item.date }}</div>
+                  {% endif %}
                 </div>
               </td>
 
-              <td class="text-end text-nowrap">{{ qty }}</td>
-              <td class="text-end text-nowrap">${{ '%.2f'|format(price) }}</td>
               <td class="text-end text-nowrap">
-                {% if deposit > 0 %}
-                  ${{ '%.2f'|format(deposit) }}
-                {% else %}
-                  <span class="text-muted">—</span>
-                {% endif %}
+                ${{ '%.2f'|format(price) }}
+              </td>
+
+              <td class="text-nowrap">
+                <form method="POST" action="{{ url_for('remove_from_cart', item_key=key) }}" class="m-0">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                </form>
               </td>
             </tr>
           {% endfor %}
         </tbody>
+
         <tfoot>
           <tr class="table-light">
-            <th colspan="3" class="text-end">Total:</th>
-            <th class="text-end">${{ '%.2f'|format(ns.rent_total + ns.deposit_total) }}</th>
+            <th class="text-end">Rent subtotal:</th>
+            <th class="text-end">${{ '%.2f'|format(rent_total) }}</th>
+            <th></th>
+          </tr>
+          <tr class="table-light">
+            <th class="text-end">Deposits (once per tool):</th>
+            <th class="text-end">${{ '%.2f'|format(deposit_total) }}</th>
+            <th></th>
+          </tr>
+          <tr class="table-light">
+            <th class="text-end">Grand total:</th>
+            <th class="text-end">${{ '%.2f'|format(grand_total) }}</th>
+            <th></th>
           </tr>
         </tfoot>
       </table>
@@ -73,12 +87,17 @@
 
     <!-- Actions -->
     <div class="d-flex flex-wrap gap-2 mt-3">
-      <form action="{{ url_for('create_checkout_session') }}" method="POST">
+      <form action="{{ url_for('create_checkout_session') }}" method="POST" class="m-0">
         <button type="submit" class="btn btn-primary">Checkout with Stripe</button>
       </form>
 
       <a href="{{ url_for('index') }}" class="btn btn-secondary">Home</a>
       <a href="{{ url_for('search_tools') }}" class="btn btn-outline-secondary">Continue Shopping</a>
+
+      <!-- Remove all -->
+      <form action="{{ url_for('clear_cart') }}" method="POST" class="ms-auto m-0">
+        <button type="submit" class="btn btn-outline-danger">Remove All</button>
+      </form>
     </div>
 
   {% else %}

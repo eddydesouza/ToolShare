@@ -16,7 +16,7 @@
 </head>
 <body>
 
-  <!-- Top Nav (kept same look & classes) -->
+  <!-- Top Nav 
   <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top px-3 shadow-sm">
     <div class="container-fluid">
 
@@ -95,14 +95,29 @@
     </div>
   </nav>
 
-  <!-- Page content (kept wrapper spacing) -->
+  <!-- Page content - wrapper spacing
   <div class="wrapper p-5">
     <div class="container mt-4">
+
+      <!-- Flash messages (new) -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mt-2">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'warning' if category=='warning' else category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
       {% block content %}{% endblock %}
     </div>
   </div>
 
-  <!-- Footer (unchanged) -->
+  <!-- Footer 
   <footer class="bg-light px-4 mt-2 mb-2">
     &copy; 2025 DEKMM. All rights reserved.
   </footer>

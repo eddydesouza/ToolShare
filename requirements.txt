@@ -6,4 +6,3 @@ mysql-connector-python
 selenium
 webdriver-manager
 stripe
-dotenv

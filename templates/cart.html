@@ -22,9 +22,7 @@
           </tr>
         </thead>
         <tbody>
-          {# Track which tool_ids have already displayed the deposit badge #}
           {% set ns = namespace(seen=[]) %}
-
           {% for key, item in cart_data.items() %}
             {% set price = (item.price or 0.0) %}
             {% set dep = (item.deposit or 0.0) %}
@@ -37,25 +35,18 @@
                 <div class="d-flex flex-column gap-1">
                   <div class="d-flex align-items-center gap-2">
                     <span class="fw-semibold">{{ item.name }}</span>
-
-                    {# Badge only on the first occurrence of a tool that has a deposit #}
                     {% if show_deposit %}
                       <span class="badge text-bg-warning">
                         Deposit charged: ${{ '%.2f'|format(dep) }}
                       </span>
                     {% endif %}
                   </div>
-
                   {% if item.date %}
                     <div class="text-muted small">Date: {{ item.date }}</div>
                   {% endif %}
                 </div>
               </td>
-
-              <td class="text-end text-nowrap">
-                ${{ '%.2f'|format(price) }}
-              </td>
-
+              <td class="text-end text-nowrap">${{ '%.2f'|format(price) }}</td>
               <td class="text-nowrap">
                 <form method="POST" action="{{ url_for('remove_from_cart', item_key=key) }}" class="m-0">
                   <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
@@ -91,13 +82,12 @@
         <button type="submit" class="btn btn-primary">Checkout with Stripe</button>
       </form>
 
+      <form action="{{ url_for('cart_clear') }}" method="POST" class="m-0">
+        <button type="submit" class="btn btn-outline-danger">Clear Cart</button>
+      </form>
+
       <a href="{{ url_for('index') }}" class="btn btn-secondary">Home</a>
       <a href="{{ url_for('search_tools') }}" class="btn btn-outline-secondary">Continue Shopping</a>
-
-      <!-- Remove all -->
-      <form action="{{ url_for('clear_cart') }}" method="POST" class="ms-auto m-0">
-        <button type="submit" class="btn btn-outline-danger">Remove All</button>
-      </form>
     </div>
 
   {% else %}

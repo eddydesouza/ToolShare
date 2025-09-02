@@ -2,7 +2,8 @@ import os
 import re
 from datetime import datetime, timezone, date, timedelta
 from functools import wraps
-from flask import (Flask, request, render_template, redirect, url_for, flash, session, jsonify)
+from typing import Optional
+from flask import (Flask, request, redirect, render_template, redirect, url_for, flash, session, jsonify)
 from werkzeug.utils import secure_filename
 from werkzeug.routing import BuildError
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -40,6 +41,14 @@ FROM_EMAIL = os.getenv("FROM_EMAIL", "youremail@example.com")
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'supersecret')
 
+def get_cart():
+    cart = session.get("cart")
+    if not isinstance(cart, dict):
+        cart = {}
+        session["cart"] = cart
+        session.modified = True
+    return cart
+
 # Stripe (test key expected)
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY', 'sk_test_your_test_key')
 
@@ -52,6 +61,8 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # =========================================================
 # DB helpers
 # =========================================================
+
+# Helper: always return a dict for the cart
 def get_db_connection():
     return mysql.connector.connect(**db_config)
 
@@ -89,7 +100,7 @@ def exec_write(sql, params=()):
 def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def tool_photo_path(photo_path: str | None) -> str:
+def tool_photo_path(photo_path: Optional [str] | None) -> str: 
     if not photo_path:
         return 'images/default-tool.png'
     path = os.path.join("static", photo_path.replace("\\", "/"))
@@ -768,12 +779,13 @@ def remove_from_cart(item_key):
     return redirect(url_for('view_cart'))
 
 @app.route('/cart/clear', methods=['POST'])
-def clear_cart():
-    """Remove all items from the cart."""
-    session['cart'] = {}
-    flash("Cart cleared.", "success")
+def cart_clear():
+    session.pop('cart', None)
+    session.modified = True
+    flash('Cart cleared.', 'success')
     return redirect(url_for('view_cart'))
 
+# CREATING STRIPE CHECKOUT SECTION
 @app.route('/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     cart = session.get('cart', {})
@@ -841,7 +853,7 @@ def create_checkout_session():
             payment_method_types=['card'],
             line_items=line_items,
             success_url=url_for('checkout_success', _external=True) + '?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=url_for('view_cart', _external=True),
+            cancel_url=url_for('checkout_cancel', _external=True),  
         )
     except Exception as e:
         app.logger.exception("Stripe checkout session error")
@@ -860,6 +872,7 @@ def checkout_success():
                 flash("Payment not completed.", "danger")
                 return redirect(url_for('view_cart'))
     except Exception:
+        # Don’t block the user if we can’t retrieve (network wobble, etc.)
         pass
 
     cart = session.get('cart', {})
@@ -886,6 +899,11 @@ def checkout_success():
     session['cart'] = {}
     flash("Payment successful! Your dates are reserved.", "success")
     return redirect(url_for('index'))
+
+@app.route("/checkout/cancel", methods=['GET']) # Cancel landing from Stripe 
+def checkout_cancel():
+    flash("Checkout canceled. Your cart is still available.", "warning")
+    return redirect(url_for("view_cart"))
 
 # =========================================================
 # Rentals (Renter)
@@ -1070,7 +1088,7 @@ def approve_cancel_request(req_id):
         """, (refund.id, req_id))
         flash(f"Cancellation approved and refunded for {rr['tool_name']}.", "success")
     except stripe.error.StripeError as e:
-        flash(f"Stripe refund failed: {str(e)}", "danger")
+        flash(f"Stripe refund failed: {str(e)}", "danger")    
     except Exception as e:
         flash(f"Error processing refund: {str(e)}", "danger")
     return redirect(url_for("owner_upcoming"))

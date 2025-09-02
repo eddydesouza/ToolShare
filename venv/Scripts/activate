@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Documents\Purdue-Global\IT488\ToolShare\venv"
+VIRTUAL_ENV="C:\Documents\Purdue-Global\ToolShare\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

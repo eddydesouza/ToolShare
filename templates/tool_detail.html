@@ -25,7 +25,7 @@
         <div class="h5 mb-0">${{ "%.2f"|format(tool.daily_price or 0.00) }} / day</div>
 
         {% if tool.deposit_amount and tool.deposit_amount > 0 %}
-          <span class="badge bg-info text-dark"
+          <span class="badge bg-info"
                 data-bs-toggle="tooltip"
                 data-bs-title="Charged at checkout; fully refundable upon successful return.">
             Refundable deposit: ${{ "%.2f"|format(tool.deposit_amount) }}

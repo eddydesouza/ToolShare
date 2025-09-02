@@ -3,29 +3,29 @@
 
 {% block content %}
 <!-- How it works (above search) -->
-<section class="py-5">
+<section class="pb-5">
   <div class="container">
     <h2 class="h3 mb-4 text-center">How ToolShare Works</h2>
     <div class="row g-4 text-center">
       <div class="col-md-4">
-        <div class="p-4 h-100 border rounded-3">
+        <div class="p-4 h-100 border rounded-3 card">
           <div class="display-6">1</div>
           <h3 class="h5 mt-2">Search</h3>
-          <p class="text-muted mb-0">Find tools by name or category and check calendar availability.</p>
+          <p class="text-muted mb-0">Find available tools by name or category.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="p-4 h-100 border rounded-3">
+        <div class="p-4 h-100 border rounded-3 card">
           <div class="display-6">2</div>
           <h3 class="h5 mt-2">Reserve</h3>
-          <p class="text-muted mb-0">Pick available dates and add the tool to your cart.</p>
+          <p class="text-muted mb-0">Pick your dates and add the tool to your cart.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="p-4 h-100 border rounded-3">
+        <div class="p-4 h-100 border rounded-3 card">
           <div class="display-6">3</div>
           <h3 class="h5 mt-2">Pickup & Go</h3>
-          <p class="text-muted mb-0">Coordinate pickup, use the tool, and return it—simple.</p>
+          <p class="text-muted mb-0">Coordinate pickup, use the tool, and return it.</p>
         </div>
       </div>
     </div>
@@ -33,12 +33,12 @@
 </section>
 
 <!-- Hero (search) -->
-<section class="py-5 bg-light rounded-3">
+<section class="py-5 bg-light rounded-3 card">
   <div class="container">
     <div class="row align-items-center gy-4">
       <div class="col-lg-12">
         <h1 class="display-5 fw-bold mb-2">Find the right tool, right now.</h1>
-        <p class="lead text-muted mb-4">Borrow from neighbors and local owners to finish your next project without buying new.</p>
+        <p class="lead text-muted mb-4">Borrow tools locally to finish your next project without buying new.</p>
 
         {% if session.user_id %}
           <!-- Logged-in: real form posts to /search -->
@@ -115,22 +115,22 @@
 <!-- Why ToolShare -->
 <section class="py-5">
   <div class="container">
-    <h2 class="h3 mb-4 text-center">Why ToolShare?</h2>
+    <h2 class="h3 mb-4 text-center">Why ToolShare? It's Simple...</h2>
     <div class="row g-4">
       <div class="col-md-4">
-        <div class="p-4 border rounded-3 h-100">
+        <div class="p-4 border rounded-3 h-100 card">
           <h3 class="h6 mb-2">Save Money</h3>
           <p class="text-muted mb-0">Rent what you need only when you need it—no storage or maintenance costs.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="p-4 border rounded-3 h-100">
+        <div class="p-4 border rounded-3 h-100 card">
           <h3 class="h6 mb-2">Save Time</h3>
           <p class="text-muted mb-0">Calendar availability lets you reserve specific dates in a click.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="p-4 border rounded-3 h-100">
+        <div class="p-4 border rounded-3 h-100 card">
           <h3 class="h6 mb-2">Support Community</h3>
           <p class="text-muted mb-0">Put idle tools to work and help neighbors finish their projects.</p>
         </div>

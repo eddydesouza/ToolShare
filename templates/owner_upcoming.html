@@ -39,9 +39,9 @@
               </td>
               <td>
                 {% if r.status == 'approved' %}
-                  <span class="badge bg-info text-dark">Approved</span>
+                  <span class="badge bg-info">Approved</span>
                 {% elif r.status == 'pending' %}
-                  <span class="badge bg-warning text-dark">Pending</span>
+                  <span class="badge bg-warning">Pending</span>
                 {% elif r.status == 'completed' %}
                   <span class="badge bg-success">Completed</span>
                 {% elif r.status == 'cancelled' %}
@@ -50,7 +50,7 @@
                   {% elif r.responded_at %}
                     <span class="badge bg-danger">Cancelled (No Refund)</span>
                   {% else %}
-                    <span class="badge bg-warning text-dark">Cancellation Requested</span>
+                    <span class="badge bg-warning">Cancellation Requested</span>
                   {% endif %}
                 {% endif %}
               </td>
@@ -79,7 +79,7 @@
     {# Reuse the pop-out calendar #}
     {% include "_availability_modal.html" %}
   {% else %}
-    <div class="alert alert-info">No upcoming rentals scheduled yet.</div>
+    <div class="alert alert-secondary">No upcoming rentals scheduled yet.</div>
   {% endif %}
 </div>
 {% endblock %}

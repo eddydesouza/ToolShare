@@ -2,14 +2,130 @@ body {
   color: #22223B;
 }
 .wrapper {
-  background: #F2E9E4;
-}
-
-.btn-primary {
-  background-color: #4A4E69;
+  background: #FFF4DF;
 }
 
 .logo img {
   width: 220px;
   margin-right: 35px;
 }
+
+:root{
+  --brand-primary:#248d92;
+  --brand-primary-contrast:#F2F0E4;
+  --brand-primary-rgb:74,78,105;
+
+  --brand-info:#075CAB;
+  --brand-info-contrast:#F2F0E4;
+  --brand-info-rgb:7,92,171;
+
+  --brand-success:#596F62;
+  --brand-success-contrast:#F2F0E4;
+  --brand-success-rgb:89,111,98;
+
+  --brand-primary-hover:color-mix(in oklab,var(--brand-primary),#000 10%);
+  --brand-primary-active:color-mix(in oklab,var(--brand-primary),#000 20%);
+  --brand-info-hover:color-mix(in oklab,var(--brand-info),#000 8%);
+  --brand-info-active:color-mix(in oklab,var(--brand-info),#000 16%);
+  --brand-success-hover:color-mix(in oklab,var(--brand-success),#000 8%);
+  --brand-success-active:color-mix(in oklab,var(--brand-success),#000 16%);
+
+  --brand-primary-focus-rgb:74,78,105;
+  --brand-info-focus-rgb:7,92,171;
+  --brand-success-focus-rgb:89,111,98;
+
+  --bs-primary:var(--brand-primary);
+  --bs-primary-rgb:var(--brand-primary-rgb);
+  --bs-info:var(--brand-info);
+  --bs-info-rgb:var(--brand-info-rgb);
+  --bs-success:var(--brand-success);
+  --bs-success-rgb:var(--brand-success-rgb);
+}
+
+.btn-primary{
+  --bs-btn-color:var(--brand-primary-contrast);
+  --bs-btn-bg:var(--brand-primary);
+  --bs-btn-border-color:var(--brand-primary);
+  --bs-btn-hover-color:var(--brand-primary-contrast);
+  --bs-btn-hover-bg:var(--brand-primary-hover);
+  --bs-btn-hover-border-color:var(--brand-primary-hover);
+  --bs-btn-active-color:var(--brand-primary-contrast);
+  --bs-btn-active-bg:var(--brand-primary-active);
+  --bs-btn-active-border-color:var(--brand-primary-active);
+  --bs-btn-disabled-color:var(--brand-primary-contrast);
+  --bs-btn-disabled-bg:var(--brand-primary);
+  --bs-btn-disabled-border-color:var(--brand-primary);
+  --bs-btn-focus-shadow-rgb:var(--brand-primary-focus-rgb);
+}
+
+.btn-info{
+  --bs-btn-color:var(--brand-info-contrast);
+  --bs-btn-bg:var(--brand-info);
+  --bs-btn-border-color:var(--brand-info);
+  --bs-btn-hover-color:var(--brand-info-contrast);
+  --bs-btn-hover-bg:var(--brand-info-hover);
+  --bs-btn-hover-border-color:var(--brand-info-hover);
+  --bs-btn-active-color:var(--brand-info-contrast);
+  --bs-btn-active-bg:var(--brand-info-active);
+  --bs-btn-active-border-color:var(--brand-info-active);
+  --bs-btn-disabled-color:var(--brand-info-contrast);
+  --bs-btn-disabled-bg:var(--brand-info);
+  --bs-btn-disabled-border-color:var(--brand-info);
+  --bs-btn-focus-shadow-rgb:var(--brand-info-focus-rgb);
+}
+
+.btn-success{
+  --bs-btn-color:var(--brand-success-contrast);
+  --bs-btn-bg:var(--brand-success);
+  --bs-btn-border-color:var(--brand-success);
+  --bs-btn-hover-color:var(--brand-success-contrast);
+  --bs-btn-hover-bg:var(--brand-success-hover);
+  --bs-btn-hover-border-color:var(--brand-success-hover);
+  --bs-btn-active-color:var(--brand-success-contrast);
+  --bs-btn-active-bg:var(--brand-success-active);
+  --bs-btn-active-border-color:var(--brand-success-active);
+  --bs-btn-disabled-color:var(--brand-success-contrast);
+  --bs-btn-disabled-bg:var(--brand-success);
+  --bs-btn-disabled-border-color:var(--brand-success);
+  --bs-btn-focus-shadow-rgb:var(--brand-success-focus-rgb);
+}
+
+.btn-outline-primary{
+  --bs-btn-color:var(--brand-primary);
+  --bs-btn-border-color:var(--brand-primary);
+  --bs-btn-hover-bg:var(--brand-primary);
+  --bs-btn-hover-color:var(--brand-primary-contrast);
+  --bs-btn-hover-border-color:var(--brand-primary);
+  --bs-btn-active-bg:var(--brand-primary-active);
+  --bs-btn-active-border-color:var(--brand-primary-active);
+  --bs-btn-focus-shadow-rgb:var(--brand-primary-focus-rgb);
+}
+
+.btn-outline-info{
+  --bs-btn-color:var(--brand-info);
+  --bs-btn-border-color:var(--brand-info);
+  --bs-btn-hover-bg:var(--brand-info);
+  --bs-btn-hover-color:var(--brand-info-contrast);
+  --bs-btn-hover-border-color:var(--brand-info);
+  --bs-btn-active-bg:var(--brand-info-active);
+  --bs-btn-active-border-color:var(--brand-info-active);
+  --bs-btn-focus-shadow-rgb:var(--brand-info-focus-rgb);
+}
+
+.btn-outline-success{
+  --bs-btn-color:var(--brand-success);
+  --bs-btn-border-color:var(--brand-success);
+  --bs-btn-hover-bg:var(--brand-success);
+  --bs-btn-hover-color:var(--brand-success-contrast);
+  --bs-btn-hover-border-color:var(--brand-success);
+  --bs-btn-active-bg:var(--brand-success-active);
+  --bs-btn-active-border-color:var(--brand-success-active);
+  --bs-btn-focus-shadow-rgb:var(--brand-success-focus-rgb);
+}
+
+.bg-info{--bs-bg-opacity:1;background-color:rgba(var(--brand-info-rgb),var(--bs-bg-opacity))!important}
+.bg-success{--bs-bg-opacity:1;background-color:rgba(var(--brand-success-rgb),var(--bs-bg-opacity))!important}
+
+.text-bg-primary{color:var(--brand-primary-contrast)!important;background-color:var(--brand-primary)!important}
+.text-bg-info{color:var(--brand-info-contrast)!important;background-color:var(--brand-info)!important}
+.text-bg-success{color:var(--brand-success-contrast)!important;background-color:var(--brand-success)!important}

@@ -38,14 +38,14 @@
                 {% elif r.status == 'approved' %}
                   <span class="badge bg-secondary">Approved</span>
                 {% elif r.status == 'pending' %}
-                  <span class="badge bg-warning text-dark">Pending</span>
+                  <span class="badge bg-warning">Pending</span>
                 {% elif r.status == 'cancelled' %}
                   {% if r.responded_at and r.refunded_at %}
                     <span class="badge bg-danger">Cancelled &amp; Refunded</span>
                   {% elif r.responded_at %}
                     <span class="badge bg-danger">Cancelled</span>
                   {% else %}
-                    <span class="badge bg-warning text-dark">Cancellation Requested</span>
+                    <span class="badge bg-warning">Cancellation Requested</span>
                   {% endif %}
                 {% endif %}
               </td>
@@ -72,7 +72,7 @@
       </table>
     </div>
   {% else %}
-    <div class="alert alert-info">No past rentals yet.</div>
+    <div class="alert alert-secondary">No past rentals yet.</div>
   {% endif %}
 </div>
 {% endblock %}

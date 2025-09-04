@@ -1037,7 +1037,11 @@ def owner_return_and_refund(req_id):
         flash(f"Error processing refund: {str(e)}", "danger")
     return redirect(url_for("owner_active"))
 
-@app.route("/owner/rental_requests/<int:req_id>/approve_cancel", methods=["POST"])
+@app.route(
+    "/rental_requests/<int:req_id>/cancel",
+    methods=["POST"],
+    endpoint="cancel_rental_request"
+)
 @require_login
 def approve_cancel_request(req_id):
     # unchanged...

@@ -129,3 +129,9 @@ body {
 .text-bg-primary{color:var(--brand-primary-contrast)!important;background-color:var(--brand-primary)!important}
 .text-bg-info{color:var(--brand-info-contrast)!important;background-color:var(--brand-info)!important}
 .text-bg-success{color:var(--brand-success-contrast)!important;background-color:var(--brand-success)!important}
+.tool-thumb {
+  width: 64px;       /* fixed width */
+  height: 64px;      /* fixed height */
+  object-fit: cover; /* crop nicely */
+  border-radius: 4px;
+}

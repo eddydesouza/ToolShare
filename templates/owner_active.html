@@ -29,8 +29,10 @@
               <td>
                 <div class="d-flex align-items-center gap-2">
                   {% if r.photo_path %}
-                    <img src="{{ url_for('static', filename=tool_photo_path(r.photo_path)) }}" alt="{{ r.tool_name }}">
-                  {% endif %}
+                    <img class="tool-thumb"
+                        src="{{ url_for('static', filename=tool_photo_path(r.photo_path)) }}"
+                        alt="{{ r.tool_name }}">
+                    {% endif %}
                   <div>
                     <div class="fw-semibold">{{ r.tool_name }}</div>
                     <div class="text-muted small">#{{ r.tool_id }}</div>

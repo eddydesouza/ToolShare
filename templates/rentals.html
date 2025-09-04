@@ -24,7 +24,8 @@
               <td>
                 <div class="d-flex align-items-center gap-2">
                   {% if r.photo_path %}
-                    <img src="{{ url_for('static', filename=tool_photo_path(r.photo_path)) }}" alt="{{ r.tool_name }}">
+                    <img class="tool-thumb"
+                         src="{{ url_for('static', filename=tool_photo_path(r.photo_path)) }}" alt="{{ r.tool_name }}">
                   {% endif %}
                   <div>
                     <div class="fw-semibold">{{ r.tool_name }}</div>
@@ -59,11 +60,15 @@
                   {% set can_cancel = false %}
                 {% endif %}
                 {% if can_cancel %}
-                  <form class="d-inline" method="post"
-                        action="{{ url_for('cancel_rental_request', req_id=r.id) }}"
-                        onsubmit="return confirm('Request cancellation for this rental?');">
-                    <button class="btn btn-outline-danger btn-sm" type="submit">Request Cancel</button>
-                  </form>
+                  <form method="post"
+      action="{{ url_for('cancel_rental_request', req_id=r.id) }}"
+      class="d-inline"
+      onsubmit="return confirm('Cancel this rental?');">
+  <button type="submit" class="btn btn-outline-danger btn-sm">
+    Cancel
+  </button>
+</form>
+
                 {% endif %}
               </td>
             </tr>
